@@ -229,18 +229,6 @@ AVLTree *CreateAVLTree(const char *filename) {
 
 // // put the time complexity analysis for InsertNode() here
 
-
-
-// int InsertNode(AVLTree *T, int k, int v)
-// {
-// 	AVLTreeNode * root;
-// 	root = T->root;
-// 	AVLTreeNode * res;
-// 	res = addNode(root, k, v);
-// 	return res == NULL ? 0 : 1;
-
-// }
-
 // put your time complexity for DeleteNode() here
 
 AVLTreeNode * FindMin(AVLTreeNode * node){
@@ -274,6 +262,38 @@ AVLTreeNode *Search(AVLTree *T, int k, int v){
   AVLTreeNode * root = T->root;
   AVLTreeNode * res = Search_helper(root, k, v);
   return res;
+}
+
+AVLTreeNode *insert_helper(AVLTreeNode *node, int k, int v){
+	if (node == NULL) {
+		AVLTreeNode *newNode = newAVLTreeNode(k ,v);
+		return newNode;
+	}
+	if (node->key < k){
+		node->right = insert_helper(node->right, k, v);
+	}
+	else if (node->key > k){
+		node->left = insert_helper(node->left, k, v);
+	}
+	else{
+		if (node->value < v) {
+			node->right = insert_helper(node->right, k, v);
+		}
+		else {
+			node->left = insert_helper(node->left, k, v);
+		}
+	}
+	return node;
+}
+
+int InsertNode(AVLTree *T, int k, int v){
+	AVLTreeNode *temp = Search(T, k , v);
+	if (temp != NULL) return 0;
+	AVLTreeNode *root = T->root;
+	AVLTreeNode *res = insert_helper(T->root, k, v);
+	T->root = res;
+	T->size = T->size + 1;
+	return 1;
 }
 
 AVLTreeNode *Delete_helper(AVLTreeNode * node, int k, int v){
@@ -317,6 +337,7 @@ int DeleteNode(AVLTree *T, int k, int v){
 	if (node == NULL) return 0;
 	AVLTreeNode * temp = Delete_helper(T->root, k, v);
 	T->root = temp;
+	T->size = T->size - 1;
 	return 1;
 }
 
@@ -369,6 +390,12 @@ int main() {
 	j = DeleteNode(tree2, 9,45);
 	printf("j = %d\n",j);
 	printf("The tree after delete: \n");
+	PrintAVLTree(tree2);
+
+	printf("\n--------------- Test insert: ");
+	i = InsertNode(tree2, 1, 10);
+	printf("i = %d", i);
+	printf("\nThe tree after the insertion: \n");
 	PrintAVLTree(tree2);
  
 	//  tree1=CreateAVLTree("stdin");
