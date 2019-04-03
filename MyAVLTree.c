@@ -126,36 +126,33 @@ static AVLTreeNode *rebalanceLR(AVLTreeNode *node){
     return newSubroot;
 }
 
-static AVLTreeNode *addNode(AVLTreeNode *node, int k, int v)
-{
+static AVLTreeNode *addNode(AVLTreeNode *node, int k, int v){
 	if(node == NULL){
         node = newAVLTreeNode(k, v);
-				printf("this root is %d, %d", k ,v);
 	}
 	else{
-		if(k > node->key)
-		{
+		if(k > node->key){
 			node->right = addNode(node->right, k, v);
 			updateNode(node);
-			if(node->balanceFactor > 1)
-			{//根节点的右子树比左子树长
-      	if(node->right->balanceFactor > 0)
-				{//右子树的右子树比左子树长
-        	node = rebalanceRR(node);
-        }
-        else
-				{node = rebalanceRL(node);
+			if(node->balanceFactor > 1){
+				if(node->right->balanceFactor > 0){
+				node = rebalanceRR(node);
+				}
+        		else{
+					node = rebalanceRL(node);
 				}
 			}	
 		}
-		else if (k == node->key )
-		{
+		else if (k == node->key ){
 			if (v > node->value) {
 				node->right = addNode(node->right, k, v);
 				updateNode(node);	
 			}	
-			else
-			{
+			else if (v == node->value){
+				return NULL;
+			}
+			
+			else{
 				node->left = addNode(node->left, k, v);
 				updateNode(node);	
 			}
@@ -171,8 +168,8 @@ static AVLTreeNode *addNode(AVLTreeNode *node, int k, int v)
                 else{
                     node = rebalanceLR(node);
                 }
-						}
-					}
+			}
+		}
 		
 	}
 	return node;
@@ -185,18 +182,17 @@ AVLTree *CreateAVLTree(const char *filename) {
 	int a, b; 
 	AVLTreeNode * root;
 	int flag = 0;
+	int size = 0;
 	
-	FILE *file = fopen("File1.txt", "r");
-	// printf("testing after.............");
+	FILE *file = fopen(filename, "r");
          
     if (! file ) {  
         printf("oops, file can't be read\n"); 
         exit(-1);
 	}
 	while ( fscanf(file, "%d", &a) != EOF){
-		// printf("testing.............");
 		fscanf(file, "(%d,%d)",&a,&b);
-		// printf("(%d, %d)", a,b);
+		size = size + 1;
 		if (flag == 0){
 			root = addNode(NULL, a, b);
 			flag = 1;
@@ -208,6 +204,7 @@ AVLTree *CreateAVLTree(const char *filename) {
 	fclose(file);
 	AVLTree * res = newAVLTree();
 	res->root = root;
+	res->size = size;
 	return res;
 }
 
@@ -230,63 +227,165 @@ AVLTree *CreateAVLTree(const char *filename) {
 // 	 //put your code here
 // }
 
-// // put the time complexity analysis for InsertNode() here    
+// // put the time complexity analysis for InsertNode() here
+
+
+
 // int InsertNode(AVLTree *T, int k, int v)
 // {
-// 	//put your code here
+// 	AVLTreeNode * root;
+// 	root = T->root;
+// 	AVLTreeNode * res;
+// 	res = addNode(root, k, v);
+// 	return res == NULL ? 0 : 1;
+
 // }
 
-// // put your time complexity for DeleteNode() here
-// int DeleteNode(AVLTree *T, int k, int v)
-// {
-//  // put your code here
-// }
+// put your time complexity for DeleteNode() here
 
-// // put your time complexity analysis for Search() here
-// AVLTreeNode *Search(AVLTree *T, int k, int v)
-// {
-//   // put your code here
-// }
+AVLTreeNode * FindMin(AVLTreeNode * node){
+	while(node->left != NULL){
+		node = node->left;
+	}
+	return node;
+}
+
+// put your time complexity analysis for Search() here
+AVLTreeNode * Search_helper(AVLTreeNode * root, int k, int v){
+	if(root == NULL) return NULL;
+	if(root->key == k){
+		if(root->value < v){
+			return Search_helper(root->right, k, v);
+		}
+		else if (root->value == v){
+			return root;
+		}
+		else{
+			return Search_helper(root->left, k, v);
+		}
+	}
+	else if (root->key < k){
+		return Search_helper(root->right, k, v);
+	}
+	return Search_helper(root->left, k, v);
+}
+
+AVLTreeNode *Search(AVLTree *T, int k, int v){
+  AVLTreeNode * root = T->root;
+  AVLTreeNode * res = Search_helper(root, k, v);
+  return res;
+}
+
+AVLTreeNode *Delete_helper(AVLTreeNode * node, int k, int v){
+	if (node == NULL) return NULL;
+	if (k < node-> key){
+		node->left = Delete_helper(node->left, k, v);
+	}
+	else if (k > node -> key){
+		node->right = Delete_helper(node-> right, k, v);
+	}
+	else{
+		if (v < node->value){
+			node->left = Delete_helper(node->left, k, v);
+		}
+		else if (v > node->value){
+			node->right = Delete_helper(node->right, k, v);
+		}
+		else{
+			if(node->left == NULL || node->right == NULL){
+				AVLTreeNode * temp = node->left ? node->left : node->right;
+				if(temp == NULL){
+					temp = node;
+					node = NULL;
+				}
+				else *node = *temp;
+				free(temp);	
+			}
+			else{
+				AVLTreeNode * minnode = FindMin(node->right);
+				node->key = minnode->key;
+				node->value = minnode->value;
+				node->right = Delete_helper(node->right, node->key, node->value);
+			}
+		}
+	}
+	return node;
+}
+
+int DeleteNode(AVLTree *T, int k, int v){
+	AVLTreeNode *node = Search(T, k, v);
+	if (node == NULL) return 0;
+	AVLTreeNode * temp = Delete_helper(T->root, k, v);
+	T->root = temp;
+	return 1;
+}
+
+
 
 // // put your time complexity analysis for freeAVLTree() here
-// void FreeAVLTree(AVLTree *T)
-// {
-// // put your code here	
+// static void clearNodes(AVLTreeNode *node){
+//     if(node->right != NULL){
+//         clearNodes(node->right);
+//         free(node->right);
+//     }
+//     if(node->left != NULL){
+//         clearNodes(node->left);
+//         free(node->left);
+//     }
+// }
+
+// void FreeAVLTree(AVLTree *T){
+// 	if(T->root == NULL)return;
+//     clearNodes(T->root);
+//     free(T->root);
+//     T->root = NULL;	
 // }
 
 // put your time complexity analysis for PrintAVLTree() here
-void helper(AVLTreeNode * node) {	
+void print_helper(AVLTreeNode * node) {	
 	if(node == NULL) return;
-	helper(node->left);
-	printf("Node Key: %d, Node Value: %d \n", node->key, node->value);
-    helper(node->right);
+	print_helper(node->left);
+	printf("(%d,%d),%d \n", node->key, node->value, node->height);
+    print_helper(node->right);
 }
 
 void PrintAVLTree(AVLTree *T) {
 	AVLTreeNode * node;
 	node = T -> root;
-	helper(node);
+	print_helper(node);
 }
 
 int main() { 
 	int i,j;
 	AVLTree *tree1, *tree2, *tree3, *tree4, *tree5, *tree6, *tree7, *tree8;
 	AVLTreeNode *node1;
+	tree2 = CreateAVLTree("file1.txt"); 
+	PrintAVLTree(tree2);
+
+	AVLTreeNode *res = Search(tree2, 9, 30);
+	printf("Test search function is working: %d, %d\n",res->key,res->value);
+
+	printf("--------------- Test delete: ");
+	j = DeleteNode(tree2, 9,45);
+	printf("j = %d\n",j);
+	printf("The tree after delete: \n");
+	PrintAVLTree(tree2);
  
 	//  tree1=CreateAVLTree("stdin");
 	//  PrintAVLTree(tree1);
 	//  FreeAVLTree(tree1);
 	//you need to create the text file file1.txt
 	// to store a set of items without duplicate items
-	tree2=CreateAVLTree("file1.txt"); 
-	PrintAVLTree(tree2);
+
 	//  tree3=CloneAVLTree(tree2);
 	//  PrintAVLTree(tree3);
 	//  FreeAVLTree(tree2);
 	//  FreeAVLTree(tree3);
 	//  //Create tree4 
 	//  tree4=newAVLTree();
-	//  j=InsertNode(tree4, 10, 10);
+	//  j=InsertNode(tree2, -5, -40);
+	//  printf("%d", j);
+
 	//  for (i=0; i<15; i++)
 	//   {
 	//    j=InsertNode(tree4, i, i);
