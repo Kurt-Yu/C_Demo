@@ -23,8 +23,7 @@ typedef struct AVLTree{
 } AVLTree;
 
 // create a new AVLTreeNode
-AVLTreeNode *newAVLTreeNode(int k, int v )
-{
+AVLTreeNode *newAVLTreeNode(int k, int v ){
 	AVLTreeNode *new;
 	new = malloc(sizeof(AVLTreeNode));
 	assert(new != NULL);
@@ -38,8 +37,7 @@ AVLTreeNode *newAVLTreeNode(int k, int v )
 }
 
 // create a new empty avl tree
-AVLTree *newAVLTree()
-{
+AVLTree *newAVLTree(){
 	AVLTree *T;
 	T = malloc(sizeof (AVLTree));
 	assert (T != NULL);
@@ -72,7 +70,6 @@ static void updateNode(AVLTreeNode * node){
     /*The current node's height is equal to the height of its children plus one.*/
     node->height = max(leftHeight,rightHeight) + 1;
     node->balanceFactor = rightHeight - leftHeight;
-		
 }
 
 static AVLTreeNode *rebalanceRR(AVLTreeNode *node){
@@ -184,8 +181,7 @@ static AVLTreeNode *addNode(AVLTreeNode *node, int k, int v)
 
 
 
-AVLTree *CreateAVLTree(const char *filename)
-{
+AVLTree *CreateAVLTree(const char *filename) {
 	int a, b; 
 	AVLTreeNode * root;
 	int flag = 0;
@@ -196,24 +192,20 @@ AVLTree *CreateAVLTree(const char *filename)
     if (! file ) {  
         printf("oops, file can't be read\n"); 
         exit(-1);
-		}
-	    while ( fscanf(file, "%d", &a) != EOF)
-		{
-			// printf("testing.............");
-			fscanf(file, "(%d,%d)",&a,&b);
-			printf("(%d, %d)", a,b);
-			if (flag == 0){
-				root = addNode(NULL, a, b);
-				// if (root  == NULL) printf("adfgsdfbsdf");
-				flag = 1;
-			} 
-			else{
-				if (root  == NULL) printf("adfgsdfbsdf");
-				root = addNode(root, a, b);
-				printf("testing........");
-			} 
+	}
+	while ( fscanf(file, "%d", &a) != EOF){
+		// printf("testing.............");
+		fscanf(file, "(%d,%d)",&a,&b);
+		// printf("(%d, %d)", a,b);
+		if (flag == 0){
+			root = addNode(NULL, a, b);
+			flag = 1;
+		} 
+		else {
+			root = addNode(root, a, b);
+		} 
     }
-  fclose(file);
+	fclose(file);
 	AVLTree * res = newAVLTree();
 	res->root = root;
 	return res;
@@ -263,34 +255,18 @@ AVLTree *CreateAVLTree(const char *filename)
 // }
 
 // put your time complexity analysis for PrintAVLTree() here
-void helper(AVLTreeNode * node)
-{	
-	 if(node == NULL)
-	 return;
-  	else if(node != NULL){
-        if(node -> left != NULL){
-            printf(" Left: %d", node->left->key);
-						printf(" Left: %d", node->left->value);
-        }
-        if(node->right != NULL){
-            printf(" right: %d", node->right->key);
-						printf(" right: %d", node->right->value);
-        }
-        printf("\n");
-    }
-    helper(node->left);
+void helper(AVLTreeNode * node) {	
+	if(node == NULL) return;
+	helper(node->left);
+	printf("Node Key: %d, Node Value: %d \n", node->key, node->value);
     helper(node->right);
-
 }
 
-void PrintAVLTree(AVLTree *T){
+void PrintAVLTree(AVLTree *T) {
 	AVLTreeNode * node;
 	node = T -> root;
 	helper(node);
 }
-
-
-
 
 int main() { 
 	int i,j;
